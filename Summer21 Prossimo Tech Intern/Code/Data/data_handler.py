@@ -11,7 +11,6 @@ import pandas as pd
 import numpy as np
 import os
 from pathlib import Path
-#####################################
 
 
 # Helper functions: 
@@ -24,11 +23,12 @@ print_df_instring = lambda df: print(df.describe().to_string()+'\n')
 #   get_return(param1, param2, param3...), get_price(param1, param2, param3...)
 #   p, n, filename,  
 class data_handler:
-  filepath = "" # maybe private too
+  filepath = ""
   filename = ""
   datatype = ""
-  raw_data = None  # make private ***
-
+  raw_data = None
+  start_date = None
+  end_date = None
 
   ###### Class constructor of data_handler ######
   def __init__(self, filename):
@@ -42,34 +42,42 @@ class data_handler:
         else:
           self.datatype = "csv"
           self.raw_data = pd.read_csv(self.filepath)
+        # Access start_date and end_date of raw_data
+        self.raw_data.Date = pd.to_datetime(self.raw_data.Date)
+        self.start_date = self.raw_data.Date.dt.date.iat[0]
+        self.end_date = self.raw_data.Date.dt.date.iat[-1]
+        self.raw_data = self.raw_data.set_index('Date')
       else:
         print("Wrong filepath or filename. Please check again!")
 
 
   # Private helper function that returns price in pandas.Dataframe
-  def __get_price(self, freq):
+  def __get_price(self, freq, start_date=None, end_date=None):
     # Get daily from raw_data
     if freq == "daily":
       daily = self.raw_data
-      daily.Date = pd.to_datetime(daily.Date)
-      daily = daily.set_index('Date') 
-      # Drop the columns where at least one element is missing.
+      # Drop the columns where at least one element is missing. ?? standard way to deal with this?
       if self.datatype == "json":
         # bc read_json will return a DataFrame containing a string "#N/A N/A"
         # in it, we need to remove those columns just like in csv.
         daily = daily.loc[:, ~(self.daily == "#N/A N/A").any()]
       else:
-        daily = daily.dropna(axis = 'columns') 
+        daily = daily.dropna(axis = 'columns')
+      # If no specified start_date or end_date, use raw_data start_date and end_date
+      if start_date is None and end_date is None:
+        daily = daily.loc[self.start_date:self.end_date]
+      else:
+        daily = daily.loc[start_date:end_date]
       return daily
     # Get weekly from daily
     elif freq == "weekly":
-      daily = self.__get_price("daily")
+      daily = self.__get_price("daily", start_date, end_date)
       # Select
       weekly = daily.loc[daily.index.weekday == 2]
       return weekly
     # Get monthly price
     elif freq == "monthly":
-      weekly = self.__get_price("weekly")
+      weekly = self.__get_price("weekly", start_date, end_date)
       l = [weekly.index[0]]
       for d in weekly.index:
         if l[-1].month != d.month:
@@ -79,17 +87,18 @@ class data_handler:
 
 
   # Actual function to return price in numpy.ndarray
-  def get_price(self, freq):
+  def get_price(self, freq, start_date=None, end_date=None):
     if freq not in ["daily", "weekly", "monthly"]:
       raise ValueError("Wrong FREQ value! Please recheck.")
-    price = self.__get_price(freq).to_numpy()
+    #if start_date not in self.raw_data.Date.
+    price = self.__get_price(freq, start_date, end_date).to_numpy()
     return price
 
 
   # Actual function that returns returns in pandas.Dataframe
-  def get_return(self, freq, flag="reg"):
-    if flag not in ["reg","log"]:
+  def get_return(self, freq, type="reg", start_date=None, end_date=None):
+    if type not in ["reg","log"]:
       raise ValueError("Wrong FLAG value! Please recheck.")
-    price = self.__get_price(freq)
-    price_return = price_2_return(price) if flag == "reg" else price_2_log_return(price)
+    price = self.__get_price(freq, start_date, end_date)
+    price_return = price_2_return(price) if type == "reg" else price_2_log_return(price)
     return price_return.to_numpy()

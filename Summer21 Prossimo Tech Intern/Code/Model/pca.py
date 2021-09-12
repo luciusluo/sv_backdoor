@@ -1,6 +1,6 @@
 # PCA method
 # Input: pandas.DataFrame
-from scipy.linalg import eigh
+from scipy.sparse.linalg import eigsh
 import numpy as np
 from math import sqrt
 from sys import path
@@ -10,7 +10,7 @@ from Analyzer import calculator
 
 
 # Input:
-#   Y: p-n asset return matrix
+#   Y: n-p asset return matrix
 #   q: num of factors. aka rank?  
 #   js: flag to apply "James-Stein" correction. Default=0. When JS=1 applies the JS bias correction
 #   sped: flag(0 or 1) to speed up PCA. Default=0.
@@ -18,10 +18,10 @@ from Analyzer import calculator
 
 def pca(Y, q, js=0, sped=0, corrad=0):
   #============= Step 1: Form covariance matrix =============#
-  p = Y.shape[0]
-  n = Y.shape[1]
-  S = Y @ Y.T / n  # Covariance matrix
-  L = Y.T @ Y / p  # used for speed up when p>=2n
+  n = Y.shape[0]
+  p = Y.shape[1]
+  S = Y.T @ Y / n  # Covariance  p-p
+  L = Y @ Y.T / p  # used for speed up when p>=2n ==>  n-n
 
   #============= Step 2 =============#
   eigval = None
@@ -29,15 +29,15 @@ def pca(Y, q, js=0, sped=0, corrad=0):
   if sped == 0:
     # Standardized PCA
     # Extract original eigenvalues, eigenvectors of sample covariance matrix
-    eigval_S, eigvec_S = eigh(S)  # eigval_S: 1d array. eigvec_S: 2d array
-    eigval = eigval_S[:-(q+1):-1] # last 'rank' elements in reversed order (large to small) 
-    eigvec = (eigvec_S.T)[:-(q+1):-1].T # corresponding eigenvectors to make them in column form
+    eigval, eigvec = eigsh(S, q, which= 'LA')  # eigval_S: 1d array. eigvec_S: 2d array
+    eigval = np.flip(eigval)
+    eigvec = np.flip(eigvec)
   elif sped == 1:
     # Sped up PCA
-    eigval_L, eigvec_L = eigh(L)
-    eigval = eigval_L[:-(q+1):-1] # last 'rank' elements in reversed order (large to small) 
-    eigvec = (eigvec_L.T)[:-(q+1):-1].T # corresponding eigenvectors
-    eigvec = Y @ eigvec / sqrt(p)
+    eigval, eigvec = eigsh(L, q, which= 'LA')
+    eigval = np.flip(eigval)
+    eigvec = np.flip(eigvec)
+    eigvec = Y.T @ eigvec / sqrt(p)
     for i in range(q):
       eigvec[:,i] = eigvec[:,i]/eigval[i]
     eigval = np.square(eigval) * p / n
@@ -59,9 +59,9 @@ def pca(Y, q, js=0, sped=0, corrad=0):
     # D = np.diag(S)
     # Let R be the correlation matrix for S. ??(should we use R=D^-1SD^-1 or cor_matrix)
     R = calculator.cor_matrix(S)
-    eigval_R, eigvec_R = eigh(R)
-    eigval_R = eigval_R[:-(q+1):-1] # last 'rank' elements in reversed order (large to small) 
-    eigvec_R = (eigvec_R.T)[:-(q+1):-1].T # corresponding eigenvectors
+    eigval_R, eigvec_R = eigsh(R, q, which='LA')
+    eigval_R = np.flip(eigval_R) # last 'rank' elements in reversed order (large to small) 
+    eigvec_R = np.flip(eigvec_R) # corresponding eigenvectors
     # Construct B
     # 1. rho = v(1)/m(v(1)). v(1) is 1st column of eigvec_R
     rho = eigvec_R[:,0]/ np.mean(eigvec_R[:, 0])  
@@ -80,7 +80,6 @@ def pca(Y, q, js=0, sped=0, corrad=0):
   if js == 0:
     if corrad == 0:
       # Standardized PCA
-      print(eigvec[:,0])
       mh = np.nanmean(eigvec[:,0])  # m(h(1)). use numpy.nanmean to avoid nan output
       B = eigvec/mh # normalized p-q
       V = np.diag(np.square(mh) * eigval) # q-q diagonal
