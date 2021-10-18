@@ -1,0 +1,105 @@
+\documentclass[leqno,12pt]{article}
+
+\include{header/config}
+\include{header/macros}
+\include{header/colors}
+
+\usepackage{setspace}
+\usepackage{pgfornament}
+
+\newcommand{\secbreak}{\begin{center}
+\vspace{0.16in}\pgfornament[width=2in]{88}
+\end{center}}
+
+% for bold sum and product below
+\usepackage{bm}
+
+\newcolumntype{C}[1]{>{\centering\let\newline\\
+	\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\
+	\arraybackslash\hspace{0pt}}m{#1}}
+
+\renewcommand{\baselinestretch}{1.16} 
+
+\begin{document}
+
+% enable bold sum and product in xetex
+\ifxetex
+  \let\lsum\sum
+  \renewcommand{\sum}{\bm{\lsum}}
+
+  \let\lprod\prod
+  \renewcommand{\prod}{\bm{\lprod}}
+\else
+\fi
+
+\newcommand{\upep}{\upepsilon}
+\newcommand{\mv}{\sigma_\rmM}
+\newcommand{\mb}{\beta^{\rmM}}
+
+{\setstretch{1.0}
+\noindent
+{\bf Prototypes v1.1}
+\noindent
+\hfill {\today} \noindent
+\rule{\textwidth}{0.01in}
+
+\section{Objects}
+
+\begin{verbatim}
+Model
+-- attribute : type (factor, graphical, etc)
+-- attribute : estimation_window (start_date, end_data, freq)
+-- attribute : method (pca, mtfa, glasso, etc)
+-- attribute : num_dimensions (p)
+-- attribute : num_observations (n)
+\end{verbatim}
+
+\begin{mdframed}[style=wide]
+\begin{verbatim}
+Model : type = factor
+-- attribute : exposures 
+             p x n matrix of factor exposures (am_standards)
+-- attribute : variances 
+             q vector of factor variances (am_standards)
+-- attribute : specifics 
+             p vector of specific risks (am_standards)
+			 p x p sparse matrix of covariances (default = zero)
+-- method : get_factor (id)
+          {variance : number, exposures : p vector}
+-- method : get_specific
+          {specifics : p vector, covariances : sparse matrix}
+\end{verbatim}
+\end{mdframed}
+
+\begin{verbatim}
+Model : type = graphical
+-- missing!
+\end{verbatim}
+
+\begin{verbatim}
+Analysis
+-- attribute : model
+\end{verbatim}
+
+\begin{mdframed}[style=wide]
+\begin{verbatim}
+Analysis : model_type = factor
+-- method : compute_signal (factor_id)
+          {signal : number} 
+-- method : compute_noise (factor_id)
+-- method : compute_size (factor_id)
+-- method : compute_snr (factor_id)
+-- method : compute_skew (facror_id)
+-- method : compute_meltup (facror_id)
+-- method : compute_correlation (facror_id)
+-- method : compute_entropy (facror_id)
+\end{verbatim}
+\end{mdframed}
+
+
+
+\bibliographystyle{agsm}
+\bibliography{biblio}
+
+\end{document}

@@ -1,0 +1,127 @@
+
+
+
+%\newif\ifhide
+%\hidetrue %\hidefalse
+%\newcommand{\hide}[1]{\ifhide {} \else {#1} \fi} 
+
+
+
+
+
+% SPACING/TEXT %
+
+\newcommand{\s}[1][1]{\hspace{#1pt}}
+\newcommand{\mst}{{\scalebox{0.6}[0.6]{\(\hspace{-1pt}{*}\)}}}
+
+\newcommand{\tq}[1]{{\textquotedblleft #1\textquotedblright}}
+\newcommand{\ts}[2]{{#1\textsubscript{#2}}}
+
+
+% PROBABILITY %
+
+\newcommand{\cid}{\overset{\scrD}{\rightarrow}}
+\newcommand{\eqd}{\overset{\scrD}{=}}
+\newcommand{\cip}{\overset{p}{\rightarrow}}
+\newcommand{\cas}{\overset{a.s.}{\rightarrow}}
+\newcommand{\sip}{\overset{p}{\sim}}
+\newcommand{\sas}{\overset{a.s.}{\sim}}
+
+\newcommand{\setst}{\mathbb} % set style
+\newcommand{\oprst}{\textup} % operator style
+
+\newcommand{\inds}[1]{ \mathbb{1}_{ \s[-0.5] {#1} }}
+\newcommand{\indf}[1]{ \mathbb{1}_{ \s[-0.5] \{#1\} }}
+
+\newcommand{\ms}{\scalebox{0.66}[1.0]{\( - \)}}
+
+\newcommand{\var}{\oprst{var}}
+\newcommand{\std}{\oprst{std}}
+\newcommand{\cov}{\oprst{cov}}
+\newcommand{\Var}{\oprst{Var}}
+\newcommand{\Cov}{\oprst{Cov}}
+\newcommand{\Std}{\oprst{SD}}
+\newcommand{\MSE}{\oprst{MSE}}
+\newcommand{\RMSE}{\oprst{RMSE} }
+\newcommand{\Exp}{\oprst{E}\s[.5]}
+\newcommand{\Prb}{\oprst{P}\s[.5]}
+\newcommand{\Qrb}{\ensuremath{\oprst{Q}\s[.5]}}
+
+\newcommand{\tsum}{{\textstyle\sum\nolimits}}
+
+% SETS / MATH $
+
+\newcommand{\nn}{\bbN}
+\newcommand{\rn}{\bbR}
+\newcommand{\zn}{\bbZ}
+\newcommand{\qn}{\bbQ}
+
+\newcommand{\Img}{\mathrm{Im}}
+\newcommand{\Rea}{\mathrm{Re}}
+\newcommand{\im}{\mathrm{i}}
+
+
+\newcommand{\bst}{ \s[1.5] | \s[1.5] }
+\newcommand{\cst}{ \s[0.5] : \s[0.5] }
+\newcommand{\sst}{ \s[2.0] ; \s[0.5] }
+
+
+\newcommand{\mat}[1]{\mbf{#1}}
+\newcommand{\ones}{\rme}
+\newcommand{\tr}{\textrm{tr}}   
+\newcommand{\diag}{\textrm{diag}}   
+
+% LETTER STYLES %
+\usepackage{pgffor}
+
+\foreach \x in {A,B,...,Z,a,b,...,z} 
+{
+  \expandafter\xdef\csname cal\x\endcsname{\noexpand 
+	\ensuremath{\noexpand\mathcal{\x}}}
+  \expandafter\xdef\csname scr\x\endcsname{\noexpand 
+	\ensuremath{\noexpand\mathscr{\x}}}
+  \expandafter\xdef\csname bb\x\endcsname{\noexpand 
+	\ensuremath{\noexpand\mathbb{\x}}}
+  \expandafter\xdef\csname rm\x\endcsname{\noexpand 
+	\ensuremath{\noexpand\mathrm{\x}}}
+  \expandafter\xdef\csname bf\x\endcsname{\noexpand 
+	\ensuremath{\noexpand\mbf{\x}}}
+}
+
+
+% GREEK %
+
+\newcommand{\ep}{\epsilon}
+
+
+% ARROWS %
+
+\newcommand{\upto}{ \uparrow }
+\newcommand{\downto}{ \downarrow }
+\newcommand{\nto}{ \nrightarrow }
+
+
+
+% COLABORATION %
+
+\newcommand{\astext}[1]{\delugetext{#1 -- alex}}
+\newcommand{\mvtext}[1]{\delugetext{#1 -- matt}}
+
+% LOCAL %
+
+\newcommand{\Rcll}{C\`adl\`ag }
+\newcommand{\rcll}{c\`adl\`ag }
+
+\newcommand{\prj}[2]{\langle #1 , #2 \rangle}
+
+\newcommand{\ip}[2]{\langle #1 , #2 \rangle}
+
+\newcommand{\cv}{\rmd}
+\newcommand{\av}{\upmu}
+
+\newcommand{\sv}{\updelta}
+\newcommand{\fv}{\upvarsigma}
+
+
+
+

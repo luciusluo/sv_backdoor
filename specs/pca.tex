@@ -1,0 +1,474 @@
+\documentclass[leqno,12pt]{article}
+
+\include{header/config}
+\include{header/macros}
+\include{header/colors}
+
+\usepackage{setspace}
+\usepackage{pgfornament}
+
+\newcommand{\secbreak}{\begin{center}
+\vspace{0.16in}\pgfornament[width=2in]{88}
+\end{center}}
+
+% for bold sum and product below
+\usepackage{bm}
+
+\newcolumntype{C}[1]{>{\centering\let\newline\\
+	\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\
+	\arraybackslash\hspace{0pt}}m{#1}}
+
+\renewcommand{\baselinestretch}{1.16} 
+
+\begin{document}
+
+% enable bold sum and product in xetex
+\ifxetex
+  \let\lsum\sum
+  \renewcommand{\sum}{\bm{\lsum}}
+
+  \let\lprod\prod
+  \renewcommand{\prod}{\bm{\lprod}}
+\else
+\fi
+
+
+\newcommand{\covm}{\Sigma}
+\newcommand{\tcov}{\Sigma}
+\newcommand{\hcov}{\bm{\hat}{\Sigma}}
+
+{\setstretch{1.0}
+\noindent
+{\bf PCA model v1.0}
+\noindent
+\hfill {\today} \noindent
+\rule{\textwidth}{0.01in}
+
+
+\section{Model estimation} The following 
+standadizes various asset covariance model estimates. The main 
+objective an estimate of a $p \times p$ covariance matrix $\tcov$.
+
+
+\begin{mdframed}[style=clean]
+The input is always a data matrix of returns to assets 
+over time, i.e.,
+\begin{quote}
+ \textsc{Input}: A $p \times n$ matrix $\rmY$ of asset returns
+and a list of options.
+\end{quote}
+Here, $n$ is the number of observations of the return
+$y \in \bbR^p$. These can be at different frequencies
+(daily, weekly, monthly, etc).
+\end{mdframed}
+
+The naive (MLE) estimate of $\tcov$ is the sample covariance 
+matrix $\rmS = \rmY \rmY^\top /n$. Principal Component
+Analysis (PCA) regularizes this estimate by assuming
+a low dimensional approximation that captures the 
+maximum variance in the data.
+
+
+\newcommand{\bhat}{\bm{\hat}}
+
+PCA may be viewed as a method of estimating a 
+canonical factor model (see \verb|am_standards|)
+for which the covariance matrix $\tcov$ takes the form 
+\begin{align}
+  \tcov 
+  = \Pi \Psi \Pi^\top + \Omega
+  = \upsigma^2 \upbeta \upbeta^\top + \Gamma \Lambda \Gamma^\top  
+  + \Omega
+\end{align}
+
+
+\begin{mdframed}[style=wide]
+
+\begin{itemize}
+\item[--] $\Pi = (\upbeta, \Gamma)$ 
+is a $p \times (1+q)$ matrix of factor exposures. 
+\item[--] There are $(q + 1)$ factors (i.e. at least one
+factor).
+\item[--] $\upbeta$ is a $p$ vector of market factor exposures,
+\begin{align*}
+  \text{requirement : } \rmm(\upbeta) = 1 \s .
+\end{align*}
+\item[--] $\upsigma$ is the variance of the market factor.
+\item[--] $\Lambda = \diag(\uplambda^2_1, \dots, \uplambda^2_q)$
+are the variances of non-market factors.
+\item[--] $\Gamma = (\upgamma^1, \dots, \upgamma^q)$ is a $p \times q$ matrix of non-market
+factor exposures,
+\begin{align*}
+  \text{requirement : }
+  \rmm(\upgamma^k) \ge 0 \text{ and }
+  \rms^2(\upgamma^k) = 1\s . 
+\end{align*}
+\item[--] $\Omega$ is the $p\times p$ matrix of specific
+risks.
+\end{itemize}
+
+
+\end{mdframed}
+
+
+\section{PCA prototype} 
+
+The following definitions in \verb|numpydoc|
+(\url{https://numpydoc.readthedocs.io/en/latest/example.html})
+style define the prototypes for the input and outut
+dictionaries (here treated as classes with attributes)
+used to construct a PCA model.
+
+
+\begin{verbatim}
+Python v3.9.7
+src/asset_models/PCA.py
+
+class return_data():
+    """ Specification for data input to PCA 
+
+    Attributes
+    ----------
+    source : str
+        Data source path and time stamp.
+    n : int
+        The number of observations.
+    p : int
+        The number of assets.
+    data : numpy.array
+        n x p matrix of returns to assets.
+    freq : str
+        Data observation frequency in {'day', 'week', 'month', 
+        'quarter', 'year'}.
+    start : time
+        Start of observation period.
+    end  : time
+        End of observation period.
+
+class pca_options(data):
+    """ Options for PCA analysis for the input data
+	
+    Attributes
+    ----------
+    number_factors : int
+        Number of factors if greater than 0; estimate otherwise.
+    exposure_adjustments : list
+        List of adjustements for exposures to factors (e.g. the
+        James-Stein or correlation matrix based methods).
+    variance_adjustments : list
+        List of adjustements for factors variances (e.g. shrinkage
+        estimators, random matrix theory based corrections.)
+    specific_adjustments : list
+        List of adjustments to specific risk estimates.
+	
+    """
+
+
+class exposure_adjustment(id)
+    """ Intructions to adjust factor exposures 
+
+    Attributes
+    ----------
+    factor_id : int
+    type : str
+        Possible types are {'JS', 'COR'}
+    """
+
+
+class variance_adjustment(id)
+    """ Intructions to adjust factor variances
+
+    Attributes
+    ----------
+    factor_id : int
+    type : str
+        Possible types are {'RMT', 'MP'}
+    """
+
+class factor_model(id)
+    """ An estimated asset model
+
+    Attributes
+    ----------
+    p : int
+        The number of assets.
+    n : int
+        The number of observations.
+    q : int
+        The number of factors. 
+    method : str
+        The method used to construct the model in {'PCA', ...}
+    code : str
+        Code version used to estimate the model
+    options : dict
+        Options passed to the method in {'pca_options', ...}
+    exposures : numpy.array
+        The p x q matrix of factor exposures <am_standards>
+    variances : numpy.array
+        The q vector of factor variances <am_standards>
+    specific : numpy.array
+        Either a p vector of specific risks for each asset or a
+        p x p covariance matrix of the specific returns.
+
+
+def pca_model(data, options)
+	""" Main routing for generating a PCA model 
+
+    Parameters
+    ----------
+    data : return_data
+        The returns data dictionary
+    options : pca_options
+        Specification for a particular models (default?)
+	
+    Returns
+    -------
+    model : dict
+        Estimated model.
+
+    Notes
+    -----
+	
+    References
+    ----------
+    Path to documents <am_standards>.
+
+    Examples
+    --------
+
+\end{verbatim}
+
+
+
+\section{PCA recipes} 
+
+The recipe for a standardized PCA model is as follows.
+
+\begin{mdframed}[style=clean]
+\textsc{Input:} $\rmY$ and a number $q$.
+\begin{itemize}
+\item[\bf Step 1.] Form the sample covariance $\rmS =
+\rmY \rmY^\top /n$ 
+\item[\bf Step 2.] Extract $q$ eigenvectors $h^{(1)},
+\dots, h^{(q)}$ from $\rmS$ along with their
+eigenvalues $\scrs^2_1 \ge \dots \ge \scrs^2_q$ (largest
+$q$ eigenvalues of $\rmS$ where  $n > q$).
+\item[\bf Step 3] Construct $\bhat\rmB$ as follows.
+The first column and $\bhat{\rmV}_{11}$ is
+\begin{align*}
+  \bhat{\beta} = \frac{h^{(1)}}{m(h^{(1)})}
+  \s[16] \text{and} \s[16]
+   \bhat{\rmV}_{11} = \scrs^2_1 \s m^2(h^{(1)}) \s .
+\end{align*} 
+The $k$th column of $\bhat{\rmB}$ for $1 <k \le q$
+and $\bhat{\rmV}_{kk}$
+is set to 
+\begin{align*}
+  \bhat{\gamma}^{(k)} = \frac{h^{(k)}}{m(h^{(1)})}
+  \s[16] \text{and} \s[16]
+   \bhat{\rmV}_{kk} = \scrs^2_k \s m^2(h^{(1)}) \s .
+\end{align*} 
+*Note, the normalization uses $h^{(1)}$, not $h^{(k)}$.
+\item[\bf Step 4.] 
+Estimate the diagonal specific return covariance as
+\begin{align*}
+  \bhat{\Delta} = \diag( \rmS - \bhat{\rmB} \bhat{\rmV}
+  \bhat{\rmB}^\top).
+\end{align*}
+\item[--] {\bf Return} $(\bhat{\rmB}, \bhat{\rmV},
+\bhat{\Delta})$ \\
+
+*Note, $\rmS - \bhat{\rmB} \bhat{\rmV}
+  \bhat{\rmB}^\top$ may be used as basis 
+for more general estimates of a matrix $\bhat{\Omega}$,
+e.g. eigenvalue truncation, sparsification, etc.
+\end{itemize}
+\end{mdframed}
+
+The empirical literature is mixed on how to select the 
+number of factors $q$. Even for US equitites which has
+been under active investigation for $60+$ years there is 
+disagreement in the empirical literature.\footnote{Various
+authors propose evidence for anywhere between one and six
+factors.} However, there are statistical approaches
+to selecting the estimate $\bhat{q}$.  The following
+recipes come from \ci{fan2020}.
+
+
+\begin{mdframed}[style=clean]
+\textsc{Input:} The sample covariance matrix $\rmS$.
+\begin{enumerate}
+\item Let $\delta_0 > 0$ be some threshold and $q_{\min}$
+and $q_{\max} \le n$ be plausible lower/upper bounds on $q$. 
+For eigenvaues $\scrs_1^2 \ge \cdots \ge \scrs^2_n$ of $\rmS$,
+\begin{align*}
+  \bhat{q} = \text{max}_{1 \le i \le q_{\max}}
+  \big\{ \s i \cst \scrs^2_i -\scrs^2_{i+1}  \ge \delta_0
+ \big\}
+\end{align*}
+\item Let  $q_{\min}$
+and $q_{\max} \le n$ be plausible lower/upper bounds on $q$. 
+For eigenvaues $\scrs_1^2 \ge \cdots \ge \scrs^2_n$ of $\rmS$,
+we take
+\begin{align*}
+  \bhat{q} = \text{argmax}_{q_{\min}\le i \le q_{\max}}
+  \bigg(
+  \frac{\scrs^2_i -\scrs^2_{i+1}}{\scrs^2_{i+1}-\scrs^2_{i+2}}
+  \bigg) \s .
+\end{align*}
+\item Let  $q_{\min}$
+and $q_{\max} \le n$ be plausible lower/upper bounds on $q$
+and set $\nu_i = \sum_{j=i+1}^n \scrs^2_j$ for eigenvaues 
+$\scrs_1^2 \ge \cdots \ge \scrs^2_n$ of $\rmS$,
+we take
+\begin{align*}
+  \bhat{q} = \text{argmax}_{q_{\min} \le i \le q_{\max}}
+  \bigg(
+  \frac{\log (\nu_{i-1}/\nu_i)}{\log (\nu_i/\nu_{i+1})}
+  \bigg) \s .
+\end{align*}
+\item Let $\rmR$ be the correlation matrix for $\rmS$ (i.e.,
+$\rmR = \rmD^{-1} \rmS \rmD^{-1}$ where $\rmD = \diag(\rmS)$
+and let $\rho^2_1 \ge \cdots \ge \rho^2_p$ be the eigenvalues
+of $\rmR$.
+\begin{align*}
+  \bhat{q} = \text{max}_{1 \le i \le p}
+  \big\{ \s i \cst \rho^2_i > 1 \big\}
+\end{align*}
+\end{enumerate}
+*A more advanced version of this estimator 
+is in \ci{fan2020}.
+\end{mdframed}
+
+The recipe for PCA can be significantly sped up when $p$ is 
+much larger than $n$, say $p \ge 2n$. The following recipe
+replaced {\bf Step 2} of the PCA procedure.
+
+\begin{mdframed}[style=clean]
+\textsc{Input:} $\rmY$ and a number $q$ (assumes $p > n$)
+\begin{enumerate}
+\item Compute the $n \times n$ 
+dual sample covariance matrix $\rmL = \rmY^\top \rmY/p$.
+\item Extract $q$ eigenvectors $u^{(1)}, \dots, u^{(q)}$ of
+$\rmL$
+with the largest eigenvalues $\ell^2_1 \ge \cdots \ell^2_q$ and
+for $1 \le i \le q$ set 
+\begin{align*}
+  h^{(i)} = \frac{\rmY u^{(i)}}{\ell_i \sqrt{p}} 
+  \s[16] \text{and} \s[16]
+  \scrs^2_i = \ell^2 p/n \s .
+\end{align*}
+\item[--] {\bf Return} $(\scrs^2_i, h^{(i)})_{1 \le 
+i\le q}$
+as the eigenpairs of $\rmS = \rmY\rmY^\top /n$.
+\end{enumerate}
+\end{mdframed}
+
+The estimate of the first (market) factor $\bhat{\beta}$
+provided by PCA is heavily biased. The following procedure is a
+James-Stein type correction for PCA aimed to remedy this. It is
+meant as an addon to {\bf Step 3} in the PCA recipe.
+
+\begin{mdframed}[style=clean]
+\textsc{Input:} The first eigenvector $h = h^{(1)}$ of $\rmS$
+and eigenvalues 
+$\scrs^2_1, \dots, \scrs^2_q$
+(or alternatively the eigenvalues of $\rmL$ in the
+spedup version
+$\ell^2_1 \ge \cdots \ge \ell^2_q$).
+\begin{enumerate}
+\item Compute the sample average
+$m(h) = \sum_{i=1}^p h_i/p$, the sample variance 
+$\rms^2 (h) = \sum_{i=1}^p (h_i-m(h))^2/p$
+and 
+\begin{align*} 
+ \rmc = 1 - \frac{\hat{\nu}^2}{\scrs_1^2 \rms^2 (h)} 
+\hspace{0.08in} \text{where} \hspace{0.08in}
+\hat{\nu}^2   =
+\bigg( \frac{\tr(\rmS)-
+(\scrs^2_1+\cdots +\scrs^2_q)}{\min(n,p)-q} \bigg) 
+ \s[2]/ p \s .
+\end{align*}
+If the input is the eigenvalues 
+$\ell^2_1 \ge \cdots \ge \ell^2_q$
+of $\rmL$, we can set 
+\begin{align*} 
+ \rmc = 1 - \frac{\hat{\nu}^2}{\ell_1^2 \s \rms^2 (h)} 
+\hspace{0.08in} \text{where} \hspace{0.08in}
+\hat{\nu}^2   =
+\bigg( \frac{\tr(\rmL)-
+(\ell^2_1+\cdots +\ell^2_q)}{\min(n,p)-q} \bigg) 
+ \s[2]/ p \s .
+\end{align*}
+\item Compute the corrected vector 
+\begin{align*} 
+ \bhat{\beta}^{\textup{JS}} = 
+ \frac{m(h) + \rmc\s[1.5] (h - m(h))}
+ { m(h)}  \s .
+\end{align*}
+*Notation, $u - x = (u_1-x,\dots, u_p-x)$
+for $u \in \bbR^p$ and $x \in \bbR$.
+\end{enumerate}
+\end{mdframed}
+
+Another PCA variation uses the correlation matrix 
+$\rmR$ to address
+the issue of bias. In the estimated model $\hcov
+= \bhat{\rmB}\bhat{\rmV} \bhat{\rmB}^\top + \bhat{\Delta}$
+this addresses only the estimation of the columns 
+of $\bhat{\rmB}$ and should not be used to adjust the 
+estimate of $\bhat{\rmV}$ in the PCA procedure. Accordingly,
+it may be used to adjust all or only of the columns
+of $\bhat{\rmB}$. For example, the first column may
+(and perhaps should) be
+James-Stein corrected as above. This also may be nicely
+combined with the correlation based $q$ estimation recipe.
+
+\begin{mdframed}[style=clean]
+\textsc{Input:} $\rmY$ and a number $q$.
+\begin{enumerate}
+\item Compute $\rmD = \diag(\rmS)$ with $\rmS = \rmY\rmY^\top
+/n$ efficienly.
+\item Extract the eigevector $h$ of $\rmS$ with the largest
+eigenvalue.
+\item Let $\rmR$ be the correlation matrix for $\rmS$ (i.e.,
+$\rmR = \rmD^{-1} \rmS \rmD^{-1}$).
+\item Extract $q$ eigenvectors $v^{(1)},
+\dots, v^{(q)}$ from $\rmR$ correspondind to the 
+$q \le n$ largest eigenvues (sorted in decreasing order).
+\item Construct $\bhat\rmB$ as follows.
+The first column and $\bhat{\rmV}_{11}$ is
+\begin{align*}
+  \bhat{\beta} = \frac{v^{(1)}}{m(v^{(1)})}
+  \s[16] \text{and} \s[16]
+   \bhat{\rmV}_{11} = \scrs^2_1 \s m^2(h) \s .
+\end{align*} 
+The $k$th column of $\bhat{\rmB}$ for $1 <k
+\le q$
+and $\bhat{\rmV}_{kk}$
+is set to 
+\begin{align*}
+  \bhat{\gamma}^{(k)} = \frac{v^{(k)}}{m(h)}
+  \s[16] \text{and} \s[16]
+   \bhat{\rmV}_{kk} = \scrs^2_k \s m^2(h) \s .
+\end{align*} 
+*Note, the normalization uses $h$, not $h^{(k)}$ nor $v^{(k)}$.
+\item[\bf Step 4.] 
+Estimate the diagonal specific return covariance as
+\begin{align*}
+  \bhat{\Delta} = \diag( \rmS - \bhat{\rmB} \bhat{\rmV}
+  \bhat{\rmB}^\top).
+\end{align*}
+\item[--] {\bf Return} $(\bhat{\rmB}, \bhat{\rmV},
+\bhat{\Delta})$ \\
+\end{enumerate}
+\end{mdframed}
+
+
+
+
+\bibliographystyle{agsm}
+\bibliography{biblio}
+
+\end{document}

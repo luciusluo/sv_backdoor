@@ -1,0 +1,380 @@
+\documentclass[leqno,12pt]{article}
+
+\include{header/config}
+\include{header/macros}
+\include{header/colors}
+
+\usepackage{setspace}
+\usepackage{pgfornament}
+
+\newcommand{\secbreak}{\begin{center}
+\vspace{0.16in}\pgfornament[width=2in]{88}
+\end{center}}
+
+% for bold sum and product below
+\usepackage{bm}
+
+\newcolumntype{C}[1]{>{\centering\let\newline\\
+	\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\
+	\arraybackslash\hspace{0pt}}m{#1}}
+
+\renewcommand{\baselinestretch}{1.16} 
+
+\begin{document}
+
+% enable bold sum and product in xetex
+\ifxetex
+  \let\lsum\sum
+  \renewcommand{\sum}{\bm{\lsum}}
+
+  \let\lprod\prod
+  \renewcommand{\prod}{\bm{\lprod}}
+\else
+\fi
+
+\newcommand{\res}{\upepsilon}
+\newcommand{\pre}{\psi}
+\newcommand{\mv}{\sigma_\rmM}
+\newcommand{\mb}{\beta^{\rmM}}
+\newcommand{\tcov}{\Sigma}
+\newcommand{\hcov}{\bm{\hat}{\Sigma}}
+
+{\setstretch{1.0}
+\noindent
+{\bf Asset modeling standards v1.1}
+\noindent
+\hfill {\today} \noindent
+\rule{\textwidth}{0.01in}
+
+\section{Asset return models}
+
+
+\begin{mdframed}[style=clean]
+Let $y = (y_1, \dots, y_p)^\top \in \bbR^p$ denote a (random) 
+vector of asset returns i.e., 
+each $y_i$ denotes the return
+to the $i$th asset in some period.
+\end{mdframed}
+
+
+
+A general, statistical model of asset return posits that
+for some predictor vector $\pre \in \bbR^q$ and 
+function $f \cst \bbR^q \to \bbR^p$ there is an
+approximate relationship $y \approx f(\pre)$. The error 
+of this 
+approximation is denoted by $\res = y - f(\pre)$, and so
+\begin{align}
+  y = f(\pre) + \res \s .
+\end{align}
+In principle, the number of dimensions, $q$, is arbitrary.
+The vector $\res \in \bbR^p$ is often refered to as the 
+the specific return, rather than an error residual. This
+distinction refers to the decomposition of return 
+into a systematic (i.e., $f(\pre)$) and specific components.
+
+A {\bf linear asset model} posits an affine relationship
+between the return and the predictor variable $\pre$.
+That is, for some $p \times q$ matrix $\rmC$ we have 
+$f(\pre) = \rmC \pre$. 
+A {\bf nonlinear asset model} allows for determinants of 
+the asset return to be driven by interactions of several 
+variables (e.g., the asset returns themselves), as well as
+higher order terms. These are
+often implemented in the context of deep learning.
+The predictor $\pre$ models the 
+return of some financial risk factor in the context of a 
+factor model (Sec. \ref{sec:fm}), and is the asset return
+itself in the context of a graphical model (Sec. \ref{sec:gm}).
+The following are references for factor, graphical and 
+deep learning models of asset returns.
+\begin{itemize}
+ \item[--] \ci[Zangari,Equity Risk Factor Models,
+Chapter 20]{litterman2004} : foundations of equity
+risk models / best practices for investment management.
+ \item[--] \ci{oh2021} develop a graphical model of asset
+return that accomodates the analysis, estimation and management 
+of equity risk.
+ \item[--] Deep learning references to come (very recent).
+\end{itemize}
+
+The first two moments play a central role in the
+analysis of asset return models. We denote the expected return
+by $\mu = \Exp (y)$ and the covariance by
+$\tcov = \Var(y)$. The latter is of particular importance
+for risk management applications.
+
+\section{Factor models} \label{sec:fm}
+A factor model consists of an exposure matrix 
+$\rmB \in \bbR^{q \times p}$ where $q$ is the number of 
+factors and we take $\rmC = \rmB$ and $\pre = x$ to write 
+the return as
+\begin{align}
+y = \rmB x + \res
+\end{align}
+The main assumption of a factor model is that
+the predictor $\psi = x$ is unccorrelated with the specific
+return
+$\res$.  {\bf That is, we require $\Cov(x, \res) = 0$.}
+The covariance matrix of 
+the return $\tcov = \Var(y)$ has dimensions $p\times p$ and
+ the decomposition
+\begin{align} \label{covdec}
+  \tcov = \rmB \rmV \rmB^\top + \Omega
+\end{align}
+where $\Var(x) = \rmV$ and $\Var(\res) = \Omega$ are
+$q\times q$ and $p\times p$ matrices respectively. This
+is a decomposition of the covariance into 
+a systematic and specific risk components. 
+
+\begin{mdframed}[style=clean]
+  The $q$ columns of $\rmB$ contain factor exposures (or 
+factor loadings), i.e. if $\upbeta 
+= (\upbeta_1, \dots, \upbeta_p) \in \bbR^p$ denotes
+a columns of $\rmB$, then $\upbeta_i$ is the exposure of the
+$i$th asset to that factor (equivalently, the loading on that
+factor). We assume $\rmB$ is full rank (otherwise, some
+factor(s) is redundant).
+\end{mdframed}
+
+The {\bf specific risk} component 
+$\Omega$ may have the following properties.
+
+\begin{mdframed}[style=clean]
+The matrix $\Omega$ is assumed to be symmetric and 
+positive definite. Further, its eigenvalues are assumed to be 
+bounded in $p$ (i.e., as more assets are added to the 
+factor model).
+A {\bf strict factor model} assumes 
+$\Omega = \Delta$ is diagonal (i.e., uncorrelated
+specific returns). A more general structure (e.g.,
+sparsity) assumption on $\Omega$ 
+implies an {\bf approximate
+factor model}. 
+\end{mdframed}
+
+The {\bf systematic risk} $\rmB \rmV \rmB$ has significant
+freedom in its specification/interpretation. 
+
+\begin{mdframed}[style=clean]
+The covariance of the factor returns $\rmV$ is assumed to 
+be symmetric and positive definite $q\times q$ matrix. 
+It is customary to assume $q$ is much smaller than $p$. Assuming 
+that $\rmV$ is diagonal leads to {\bf uncorrelated
+factor returns} (i.e., uncorrelated entries of $x \in \bbR^q$).
+This can always
+be assumed at the expense of orthogonally
+transforming the matrix $\rmB$.\footnote{Let
+$\rmB \rmV \rmB = \rmB \rmO \Lambda \rmO^\top \rmB
+= \rmH \Lambda \rmH^\top$
+for an orthogonal $\rmO$ (i.e., $\rmO^\top
+\rmO = \rmO \rmO^\top = \rmI$) and $\rmH = \rmO \rmB$. 
+This however does not guarantee orthogonal columns of 
+$\rmH$.} The {\bf cannonical orientation} of the 
+factor risk $\rmV$ and factor loadings $\rmB$ achieves
+uncorrelated factor returns as well as orthogonal factors:
+\begin{quote}
+  Let $\Psi$ be any diagonal positive definite $q \times q$
+matrix. Then, there is a nonsingular $q \times q$ matrix 
+$\Phi$ such
+that defining $\uppsi = \Phi^{-1} x$ and $\Pi = \rmB \Phi$ 
+implies the returns satisfy
+\begin{equation}  \label{canonical}
+\begin{aligned}
+  y &= \Pi \uppsi + \upepsilon \\
+  \Var(\uppsi) &= \Psi \text{ (diagonal)}\\  
+  \Var(y) &= \tcov = \Pi \Psi \Pi^\top + \Omega \\
+\text{and } \Pi &\text{ has orthogonal columns.}
+\end{aligned}
+\end{equation}
+\end{quote}
+\end{mdframed}
+
+In the {\bf cannonical orientation} the factor returns
+$\uppsi = (\uppsi_1, \dots \uppsi_q)^\top$ are uncorrelated
+and the factor exposures $\uppi^1, \dots, \uppi^q$
+(the columns of $\Pi$) are orthogonal. That is, we have  
+$\ip{\uppi^k}{\uppi^\ell} = 0$ for all  
+$k \neq \ell$ and every $\ip{\uppi^k}{\uppi^k} = 
+\frac{\s \upalpha_k}{\Psi_{kk}}$ for some constant
+$\upalpha_k \in (0,\infty)$.
+Here $\ip{\cdot}{\cdot}$ is any inner product on $\bbR^p$.
+To illustrate, for a symmetric positive definite (weight)
+matrix $\rmW$, we have $\ip{u}{v} = u^\top \rmW v$ 
+and the standard inner product has $\rmW = \rmI$. 
+The $(\upalpha_k)$
+are computed via the diagonal entries of a matrix $\calA$
+as follows. Let $\rmM^{\sfrac{1}{2}}$ 
+denote the square-root of a matrix (i.e. 
+$\rmM = 
+\rmM^{\sfrac{\s 1 \s[-1]}{2}}
+\rmM^{\sfrac{\s 1 \s[-1]}{2}}$) and let
+\begin{align}
+  \rmV^{\sfrac{\s 1\s[-1]}{2}} \rmB^\top \rmW \rmB 
+\rmV^{\sfrac{\s 1\s[-1]}{2}} = \rmO \calA \rmO^\top
+\end{align}
+where the right side is the eigen-decomposition of the 
+matrix on the left side (i.e., the $(\upalpha_k)$ are
+the eigenvalues of this matrix). Further, $\Phi
+= \rmV^{\sfrac{\s1\s[-1]}{2}} 
+\rmO^\top \Psi^{\ms\sfrac{1\s[-1]}{2}}$ in 
+$\req{canonical}$.
+Then, orthonormal factor exposures  
+(i.e., $\ip{\uppi^k}{\uppi^k} = 1$) may be achieved by requiring the factor variances 
+to satisfy $\Psi_{kk} = \upalpha_k$. Alternatively, one
+can require unit factor variances (i.e., 
+$\Psi = \rmI$) at the expense of
+only orthogonal factor exposures.
+
+
+\begin{mdframed}[style=clean]
+   It is empirical fact that most asset returns data exhibits
+a factor for which the exposures are mostly all of the same
+sign and the variance of this factor is large (often 
+the largest). This risk factor is refered to as the 
+{\bf market}. As an example in the Barra MSCI US equity
+model the exposures to the market factor are set as 
+the isometric vector
+\begin{align}
+ \rme = (1, \dots, 1)^\top \in \bbR^p
+\end{align}
+i.e., ever asset has unit exposure to the market. The volatility
+(square-root of the variance) of this factor is typically 
+assumed to be around $16\%$ annualized. In Barra models
+the factor return variances are typically computed by 
+regressing asset returns onto fixed factor exposures such as
+$\rme$. The other Barra factors have exposures designed to 
+have a zero average exposure. Barra factor exposures
+are not orthogonal.
+\end{mdframed}
+
+The {\bf canonical factor model}, defined as having uncorrelated
+factor returns and orthogonal factors per $\req{canonical}$, may be written to 
+highlight the presence of the {\bf market factor} by decomposing
+the covariance $\Sigma = \Pi \Psi \Pi^\top + \Omega$ as follows.
+\begin{align}
+  \Sigma = \upsigma^2 \upbeta  \upbeta^\top  
+  + \Gamma \Lambda \Gamma + \Omega
+\end{align}
+for market exposures $\upbeta \in \bbR^p$, market variance
+$\upsigma^2$, a $p \times (q-1)$ matrix $\Gamma$ of nonmarket
+factor exposures with the $(q-1) \times (q-1)$
+covariance matrix $\calA$ of the returns of these factors,
+and the specific risk matrix $\Omega$. Here, the exposure
+matrix $\Pi$ is $\Gamma$ with an additional column $\upbeta$
+and covariance $\Psi$ is $\Lambda$ with an additional
+diagonal element $\upsigma^2$.
+
+\begin{mdframed}[style=clean]
+  The relative sizes of the variances and 
+exposures to factors is unidentifiable. For example 
+$\upsigma^2 \beta \beta^\top = (\upsigma/\rmc)^2
+(\rmc \s \upbeta) (\rmc\s \upbeta)^\top$  for any $\rmc \neq 0$.
+Thus some canonical convention is needed to standardize
+the sizes of the variances and exposures relative to one
+another. Due to the interpretation of $\upbeta$ as the
+market exposures we adopt the following convention:\footnote{Due
+to the orthogonal property of the canonical factor model
+only one factor is expected to be market-like, i.e., large
+variance and exposures of mostly the same sign.}
+\begin{quote}
+  The average market exposure is standardized to be one
+(which fixes the size of the market variance). Specifically,
+for some weights $w \in \bbR^p$ with 
+$\tsum_{i=1}^p w_i = 1$ and every $w_i \ge 0$,
+\begin{align}
+\rmm (\upbeta) = \tsum_{i=1}^p w_i \beta_i = 1 \s .
+\end{align}
+The standard choice is every $w_i = 1/p$ (unweighted mean).
+
+The nonmarket factors in $\Gamma \Lambda \Gamma^\top$ 
+may have average exposure equal to 
+zero (the exposures $\Gamma$ have mixed signs) and for this
+reason we standardize their variation instead (fixing
+the $\Lambda$). Specifically,
+each column $\upgamma$ of $\Gamma$ is taken to have
+\begin{equation}
+\begin{aligned}
+ \rms^2(\upgamma) &= \tsum_{i=1}^p w_i (\upgamma_i - 
+ \rmm(\upgamma))^2 = 1 , \\
+ \rmm(\upgamma) &= \tsum_{i=1}^p w_i \upgamma_i \ge 0 \s .
+\end{aligned}
+\end{equation}
+for any weight vector $w \in \bbR^p$ as above.
+\end{quote}
+\end{mdframed}
+
+To get some intuition for these normalizations note that
+for any vector $v \in \bbR^p$ and equal weights $w_i =1/p$ 
+we have the relation the the lengh $|v| = \sqrt{\ip{v}{v}}$,
+\begin{align}
+ |v| &= \sqrt{p} ( \rmm^2(v) + \rms^2(v) ) \s .
+\end{align}
+In this way, all factor exposures are normalized to have
+a lengh proportional to $\sqrt{p}$ and either the mean
+$\rmm(v)$ or variation 
+$\rms(v)$ are standardized to unity (for $\upbeta$ or 
+$\upgamma$).
+
+
+\section{Graphical models.}\label{sec:gm} 
+In this model the predictor
+$\pre = y$ and we write $\rmC = \rmA$ so,
+\begin{align}
+  y = \rmA y + \res
+\end{align}
+Here, $p = q$ so that $\rmA$ is a $p \times p$ matrix 
+with a zero diagonal (i.e. no asset is allowed to predict
+itself). The main assumption (can always be satified) is
+\begin{align}
+  \Cov (\rmA y , \res) = 0 \s .
+\end{align}
+The second main assumption is that:
+\begin{itemize}
+ \item[--] $\rmA$ is a sparse matrix.
+\end{itemize}
+This requirement may be in place for several reasons. It
+can be justified from a financial perspective, from an
+ estimation perspective, but also to maintain
+a consistency with factor modeling. In a factor model
+the number of paramers that are estimates in much smaller
+than $p^2$. For example, for a strict factor model, only
+$p \times q + q + p$ parameters are estimated and $q$ 
+is assumed much smaller than $p$. This places a limit on the 
+number of non-zero entries of $\rmA$.
+
+
+The covariance decomposition in a factor model takes the form
+\begin{align}
+  \tcov = \rmA \tcov \rmA^\top + (\rmI + \rmA) \rmD
+\end{align}
+where $\rmD = \Cov(y,\res)$ which is a diagonal matrix. This
+decomposition mirrors that in $\req{covdec}$ and attempts to
+decompose the covariance into
+\begin{itemize}
+\item[--] $\rmA \tcov \rmA^\top$ -- the variance explained by
+the asset returns themselves. This should be compared to
+$\rmB \rmV \rmB^\top$, the variance explained by the
+factors.
+\item[--] The remaining variance $(\rmI + \rmA)\rmD$ 
+(not explained by the asset returns).
+\end{itemize}
+
+One implication of sparsity on $\rmA$ is that the precision
+matrix $\rmK = \tcov^{-1}$ is also sparse. In a graphical 
+model we have the identity
+\begin{align}
+ \rmK = \rmD^{-1} \Omega \rmD^{-1}
+\end{align}
+where $\Omega = \Var(\res)$, which we see is also a sparse
+matrix.
+
+
+
+
+
+\bibliographystyle{agsm}
+\bibliography{biblio}
+
+\end{document}

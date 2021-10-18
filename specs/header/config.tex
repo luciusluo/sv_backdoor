@@ -1,0 +1,182 @@
+
+\usepackage{ifxetex}
+
+% PAGE SETTINGS %
+
+\parskip 0in
+\parindent 0.32in
+
+\usepackage[letterpaper]{geometry}
+\geometry{text={5.562306in,9.0in},
+headsep=0.5in,footskip=0.5in,centering}
+
+
+\ifxetex
+  \usepackage[T1]{fontenc}
+  \usepackage[no-math]{fontspec}
+
+  \setmainfont[Scale=1.0]{Kepler Std Light}
+
+  \usepackage[eucal,mtphrb,mtpfrak,noamssymbols,
+  	      subscriptcorrection,zswash]{mtpro2}
+
+  \DeclareMathSizes{12}{12}{9}{7}
+\else
+  \usepackage[T1]{fontenc}
+  \usepackage{lmodern}
+
+  % to match mt2pro
+  \usepackage{upgreek}
+  \newcommand{\mbf}{\mathbf} 
+
+  \usepackage{mathrsfs}
+
+\fi
+  
+\usepackage{amssymb}
+\usepackage[scr=boondox, scrscaled=1]{mathalfa}
+
+
+% PACKAGES %
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{comment}
+\usepackage{url}
+\usepackage{marginnote}
+\usepackage{booktabs}
+\usepackage{bm}
+\usepackage{mdframed}
+\usepackage{xfrac}
+
+
+% ALGORITHMS %
+
+\usepackage{float}
+\floatstyle{ruled}
+\newfloat{algorithm}{hpt}{lop}
+\floatname{algorithm}{Algorithm}
+
+% THEOREMS %
+
+\usepackage{amsthm}
+\newtheoremstyle{mytheoremstyle}
+{\topsep}                    % Space above
+{\topsep}                    % Space below
+{\slshape}                   % Body font
+{0.32in}                           % Indent amount
+{\bfseries}                  % Theorem head font
+{.}                          % Punctuation after theorem head
+{0.08in}                       % Space after theorem head
+{}  % Theorem head spec (can be left empty, meaning ‘normal’)
+
+\theoremstyle{mytheoremstyle}
+
+\makeatletter
+\@ifclassloaded{report}{
+   \newtheorem{theorem}{Theorem} }
+{  \newtheorem{theorem}{Theorem}[section] }
+\makeatother
+
+
+\newtheorem{thm}[theorem]{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{condition}[theorem]{Condition}
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{claim}[theorem]{Claim}
+
+\newtheorem*{theo}{Theorem}
+\newtheorem*{lemm}{Lemma}
+\newtheorem*{defn}{Definition}
+\newtheorem*{prop}{Proposition}
+\newtheorem*{assm}{Assumption}
+\newtheorem*{cond}{Condition}
+\newtheorem*{coro}{Corollary}
+\newtheorem*{remk}{Remark}
+\newtheorem*{expl}{Example}
+\newtheorem*{clai}{Claim}
+
+\renewcommand\qedsymbol{$\blacksquare$}
+\renewenvironment{proof}[1][\proofname]{{\scshape #1. }}
+{\qed\vspace{0.16in}}
+
+% SECTIONS %
+\usepackage{titlesec}
+
+% section that begins a paragraph (. separator)
+\titleformat{\section}[hang]
+{\centering\bfseries}
+{\thesection.}{0.04in}{}[]
+\titlespacing{\section}{0.32in}{0.32in}{0.08in}
+
+\titleformat{\subsection}[runin]
+{\bfseries} 
+{\thesubsection.}{0.04in}{}[.]
+\titlespacing{\subsection}{0.32in}{0.08in}{0.08in}
+
+% ABSTRACT
+
+\renewcommand{\abstractname}{\bf Abstract}
+
+\renewenvironment{abstract}
+{\small
+\begin{center}
+  \bfseries \abstractname\vspace{0in}\vspace{0pt}
+\end{center}
+\list{}{
+	\setlength{\leftmargin}{0.5in}
+    \setlength{\rightmargin}{\leftmargin}
+	\itemindent \parindent} 
+  \item\relax}
+{\endlist}
+
+
+% TABLES AND FIGURES
+
+\usepackage{caption}
+\captionsetup[figure]{margin=0.16in,
+	labelsep=period,labelfont=bf,textfont=it}
+\captionsetup[table]{margin=0.16in,
+	labelsep=period,labelfont=bf,textfont=it}
+
+
+% REFERENCES %
+
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, allcolors=deluge}
+
+\usepackage{harvard}
+\makeatletter
+\@ifpackageloaded{harvard}{}
+  {\newcommand{\citeasnoun}{\cite}}
+\makeatother
+
+\newcommand{\ci}{\citeasnoun}
+\newcommand{\req}[1]{(\ref{#1})}
+
+\newcommand{\hci}[2]{ \href{#2}{\ci{#1}} }
+\newcommand{\hcite}[2]{ \href{#2}{\cite{#1}} }
+
+
+% FRAMES %
+
+\global\mdfdefinestyle{clean}{%
+linecolor=black,linewidth=0.5pt,%
+leftmargin=0.32in,rightmargin=0.32in
+}
+
+\global\mdfdefinestyle{wide}{%
+linecolor=black,linewidth=0.5pt,%
+leftmargin=0in,rightmargin=0in
+}
+
+
+
+
+
