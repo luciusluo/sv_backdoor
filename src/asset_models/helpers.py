@@ -9,6 +9,122 @@ sqrt = np.sqrt
 eucn = np.linalg.norm
 srng = np.random.RandomState
 
+
+class return_data():
+    """ Specification for data input to PCA 
+
+    Attributes
+    ----------
+    source : str
+        Data source path and time stamp.
+    n : int
+        The number of observations.
+    p : int
+        The number of assets.
+    data : numpy.array
+        n x p matrix of returns to assets.
+    freq : str
+        Data observation frequency in {'day', 'week', 'month', 
+        'quarter', 'year'}.
+    start : time
+        Start of observation period.
+    end  : time
+        End of observation period.
+    """
+
+class pca_options(return_data):
+    """ Options for PCA analysis for the input data
+	
+    Attributes
+    ----------
+    number_factors : int
+        Number of factors if greater than 0; estimate otherwise.
+    exposure_adjustments : list
+        List of adjustements for exposures to factors (e.g. the
+        James-Stein or correlation matrix based methods).
+    variance_adjustments : list
+        List of adjustements for factors variances (e.g. shrinkage
+        estimators, random matrix theory based corrections.)
+    specific_adjustments : list
+        List of adjustments to specific risk estimates.
+	
+    """
+
+
+class exposure_adjustment():
+    """ Intructions to adjust factor exposures 
+
+    Attributes
+    ----------
+    factor_id : int
+    type : str
+        Possible types are {'JS', 'COR'}
+    """
+
+
+class variance_adjustment():
+    """ Intructions to adjust factor variances
+
+    Attributes
+    ----------
+    factor_id : int
+    type : str
+        Possible types are {'RMT', 'MP'}
+    """
+
+class factor_model():
+    """ An estimated asset model
+
+    Attributes
+    ----------
+    p : int
+        The number of assets.
+    n : int
+        The number of observations.
+    q : int
+        The number of factors. 
+    method : str
+        The method used to construct the model in {'PCA', ...}
+    code : str
+        Code version used to estimate the model
+    options : dict
+        Options passed to the method in {'pca_options', ...}
+    exposures : numpy.array
+        The p x q matrix of factor exposures <am_standards>
+    variances : numpy.array
+        The q vector of factor variances <am_standards>
+    specific : numpy.array
+        Either a p vector of specific risks for each asset or a
+        p x p covariance matrix of the specific returns.
+    """
+
+def pca_model(data, options):
+	""" Main routing for generating a PCA model 
+
+    Parameters
+    ----------
+    data : return_data
+        The returns data dictionary
+    options : pca_options
+        Specification for a particular models (default?)
+	
+    Returns
+    -------
+    model : dict
+        Estimated model.
+
+    Notes
+    -----
+	
+    References
+    ----------
+    Path to documents <am_standards>.
+
+    Examples
+    --------
+    """
+
+
 class struct(object):
     def __init__(self, adict):
         self.__dict__.update(adict)

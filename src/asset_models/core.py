@@ -61,7 +61,7 @@ def main():
     """! Main program entry."""
     init()  
 
-    waste_time = 0
+    waste_time = 5
 
     n = 50   # num observations
     p = 100  # num assets
